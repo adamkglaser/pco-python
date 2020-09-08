@@ -2,6 +2,13 @@
 
 """
 @author: ziegler
+
+@edited by: adamkglaser
+
+Extended camera class to include camera_number for multiple cameras
+Using OpenCameraEx() instead of OpenCamera()
+
+Added readout mode and line timing inputs to configuration function
 """
 
 import numpy as np

@@ -2,6 +2,11 @@
 
 """
 @author: ziegler
+
+@edited by: adamkglaser
+Addewd functions GetCmosLineTiming, SetCmosLineTiming,
+GetCmosLineExposureDelay, SetCmosLineExposureDelay
+for light-sheet readout mode on the PCO edge cameras.
 """
 
 import ctypes as C
