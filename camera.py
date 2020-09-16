@@ -2,13 +2,6 @@
 
 """
 @author: ziegler
-
-@edited by: adamkglaser
-
-Extended camera class to include camera_number for multiple cameras
-Using OpenCameraEx() instead of OpenCamera()
-
-Added readout mode and line timing inputs to configuration function
 """
 
 import numpy as np
@@ -86,7 +79,6 @@ class Camera(object):
         >>> default_configuration()
 
         """
-
         if self.sdk.get_recording_state()['recording state'] == 'on':
             self.sdk.set_recording_state('off')
 
@@ -99,7 +91,6 @@ class Camera(object):
 
         self.__serial = self.sdk.get_camera_type()['serial number']
         self.__camera_name = self.sdk.get_camera_name()['camera name']
-        # self.sdk.set_pixel_rate(272250000) # set to fast mode
         self.sdk.arm_camera()
 
     # -------------------------------------------------------------------------
@@ -131,6 +122,9 @@ class Camera(object):
         conf.update({'trigger': self.sdk.get_trigger_mode()['trigger mode']})
         conf.update({'acquire': self.sdk.get_acquire_mode()['acquire mode']})
         conf.update({'metadata': self.sdk.get_metadata_mode()['metadata mode']})
+        conf.update({'output format': self.sdk.get_interface_output_format()['output format']})
+        conf.update({'exposure lines': self.sdk.get_cmos_line_exposure_delay()['exposure lines']})
+        conf.update({'line timw': self.sdk.get_cmos_line_timing()['line time']})
 
         bin = self.sdk.get_binning()
         conf.update({'binning': (bin['binning x'], bin['binning y'])})
@@ -186,15 +180,21 @@ class Camera(object):
         if 'binning' in arg:
             self.sdk.set_binning(*arg['binning'])
 
-        if 'readout' in arg:
-            self.sdk.set_interface_output_format('edge', arg['readout'])
-
         if 'line timing' in arg:
+            print(self.sdk.get_cmos_line_timing())
             self.sdk.set_cmos_line_timing('on', 'us', arg['line timing']) # assumes us unit and turns ON line timing
-            
-        if 'exposure lines' in arg:
-            self.sdk.set_cmos_line_exposure_delay(arg['exposures lines'], 0) # assumes 0 lines of delay
+            print(self.sdk.get_cmos_line_timing())
 
+        if 'exposure lines' in arg:
+            print(self.sdk.get_cmos_line_exposure_delay())
+            self.sdk.set_cmos_line_exposure_delay(arg['exposure lines'], 0) # assumes 0 lines of delay
+            print(self.sdk.get_cmos_line_exposure_delay())
+
+        if 'output format' in arg:
+            print(self.sdk.get_interface_output_format('edge'))
+            self.sdk.set_interface_output_format('edge', arg['output format'])
+            print(self.sdk.get_interface_output_format('edge'))
+            
         self.sdk.arm_camera()
 
     # -------------------------------------------------------------------------
@@ -249,24 +249,6 @@ class Camera(object):
             self.rec.stop_record()
             self.rec.delete()
 
-        if mode == 'sequence':
-            blocking = 'on'
-        elif mode == 'sequence non blocking':
-            mode = 'sequence'
-            blocking = 'off'
-        elif mode == 'ring buffer':
-            if number_of_images < 4:
-                print('Please use 4 or more image buffer')
-                raise
-            blocking = 'off'
-        elif mode == 'fifo':
-            if number_of_images < 4:
-                print('Please use 4 or more image buffer')
-                raise
-            blocking = 'off'
-        else:
-            raise
-
         m = self.rec.create('memory')['maximum available images']
         if m >= number_of_images:
             self.__number_of_images = number_of_images
@@ -278,6 +260,14 @@ class Camera(object):
 
         self.rec.set_compression_parameter()
 
+    # -------------------------------------------------------------------------
+    def start(self, blocking):
+        """
+        Starts the current recording. Blocking 'on' should only be used with sequence mode
+
+        >>> stop()
+
+        """
         self.rec.start_record()
 
         if blocking == 'on':

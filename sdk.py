@@ -2,11 +2,6 @@
 
 """
 @author: ziegler
-
-@edited by: adamkglaser
-Addewd functions GetCmosLineTiming, SetCmosLineTiming,
-GetCmosLineExposureDelay, SetCmosLineExposureDelay
-for light-sheet readout mode on the PCO edge cameras.
 """
 
 import ctypes as C
@@ -15,7 +10,7 @@ import os
 import time
 from datetime import datetime
 import platform
-
+import numpy
 
 class sdk:
 
@@ -3810,6 +3805,10 @@ class sdk:
                                                       p_buffer,
                                                       ilen)
 
+        # pa = C.cast(buffer, C.POINTER(C.c_long))
+        # a = numpy.frombuffer(pa.contents, dtype=C.c_long)
+        # print(a)
+
         ret = {}
         if error == 0:
             ret.update({'buffer': buffer})
@@ -3869,7 +3868,7 @@ class sdk:
     # -------------------------------------------------------------------------
     def get_cmos_line_timing(self):
 
-       """
+        """
         Get CMOS line exposure delay
 
         This function returns the current settings of the Lightsheet scanning mode of the pco.edge.
@@ -3902,7 +3901,6 @@ class sdk:
                                                        dwReserved,
                                                        wReservedLen)
 
-        print(error)
         ret = {}
         if error == 0:
             ret.update({'parameter': wParameter.value})
