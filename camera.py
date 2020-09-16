@@ -265,7 +265,7 @@ class Camera(object):
         """
         Starts the current recording. Blocking 'on' should only be used with sequence mode
 
-        >>> stop()
+        >>> start()
 
         """
         self.rec.start_record()
